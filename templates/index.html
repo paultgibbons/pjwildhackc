@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<script src="/static/d3.js"></script>
+<script type="text/javascript" src="/static/wfg.js"></script>
+<script type="text/javascript">
+ function setWPM(wpm) {
+   document.getElementById('WPM').innerHTML = wpm;
+   var speed = (Math.max(Math.min(wpm,200),20))/2;
+   document.getElementById('WPMbar').style.width = (speed.toString())+'%';
+ } 
+
+ function setVocab(vocab) {
+   document.getElementById('Vocab').innerHTML = vocab;
+   var speed = (Math.max(Math.min(vocab,20),2))*5;
+   document.getElementById('Vocabbar').style.width = (speed.toString())+'%';
+ }
+
+ function setWC(wc) {
+   document.getElementById('WC').innerHTML = wc;
+   var speed = (Math.max(Math.min(wc,20),2))*5;
+   document.getElementById('WCbar').style.width = (speed.toString())+'%';
+ }
+
+ function setText(text) {
+   document.getElementById('text').innerHTML = text;
+ }
+
+ function processResult(result) {
+    setWPM(result['WPM']);
+    setVocab(result['Vocab']);
+    setWC(result['WC']);
+    setText(result['text']);
+    drawGraph(result['values']);
+    drawCloud(result['fl']);
+ }
+</script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript" src="/static/d3.layout.cloud.js"></script>
+<script type="text/javascript" src="/static/cloud.js"></script>
+
+<form action="{{url_for('ph')}}" method="post" enctype="multipart/form-data">
+   <button type="buton" class="btn btn-primary" onclick="startRecording(this);">record</button>
+   <button type="buton" class="btn btn-primary" onclick="stopRecording(this);" disabled>stop</button>
+
+   <h3>Recording</h3>
+   <div id="recordingslist"></div>
+
+   <script type="text/javascript" src="/static/record.js"></script>
+   <script src="/static/recorder.js"></script>
+
+   <input type="file" id="file" name="file">
+   <input class="btn" type="submit" value="Submit" id="submit" disabled>
+</form>
+<table class = "table">
+   <tbody>
+      <tr>
+        <td class="col-md-12">
+          <div id="legend"></div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <p id="hp">Transcibing powered by Haven OnDemand HP</p>
+          <p id="text"></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="col-md-12">
+          <ul class="list-group">
+            <li class="list-group-item">
+              <div class="progress">
+                <div class="progress-bar progress-bar-danger" style="width: 100%" id="WPMbar">
+                  WPM: <span id="WPM">0</span>
+                </div>
+                
+              </div>
+            </li>
+            <li class="list-group-item">
+              <div class="progress">
+                <div class="progress-bar progress-bar-warning" style="width: 100%" id="Vocabbar">
+                  Vocabulary: <span id="Vocab">0</span> words
+                </div>
+              </div>
+            </li>
+            <li class="list-group-item">
+              <div class="progress">
+                <div class="progress-bar progress-bar-success" style="width: 100%" id="WCbar">
+                  Word Count: <span id="WC">0</span> words
+                </div>
+              </div>
+            </li>
+          </ul>   
+        </td> 
+      </tr>
+      <tr>
+        <td>
+          <h3>Word length frequency</h3>
+          <div id="wcg"></div>
+        </td>
+      </tr>
+   </tbody>
+</table>
+<script type="text/javascript">
+  drawCloud([{'text':'Wildhacks', 'size':40}]);
+  {% if params != {} %}
+    processResult({{params|safe}});
+  {% endif %}
+</script>
+{% endblock %}
